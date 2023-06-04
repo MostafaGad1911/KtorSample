@@ -46,13 +46,33 @@ class MyReposVM @Inject constructor(
     val errorMessage: LiveData<String?>
         get() = _errorMessage
 
-    private var provider = OAuthProvider.newBuilder("github.com")
+    private val provider by lazy {
+        OAuthProvider.newBuilder("github.com").setScopes(listOf("user:email"))
+    }
     private val firebaseAuth: FirebaseAuth by lazy { Firebase.auth }
 
     private val _userLogin = MutableLiveData(false)
     val userLogin: LiveData<Boolean>
         get() = _userLogin
 
+    private val _userIn = MutableLiveData(false)
+    val userIn: LiveData<Boolean>
+        get() = _userIn
+
+
+    fun isUserLogin(activity:Activity){
+        val firebaseUser = firebaseAuth.currentUser
+        firebaseUser
+            ?.startActivityForLinkWithProvider(activity, provider.build())
+            ?.addOnSuccessListener {
+                loadUserData(it.additionalUserInfo?.username.toString())
+                _userIn.postValue(true)
+            }
+            ?.addOnFailureListener {
+                _userIn.postValue(false)
+                // Handle failure.
+            }
+    }
 
     private suspend fun getRepos(userName: String) {
         try {

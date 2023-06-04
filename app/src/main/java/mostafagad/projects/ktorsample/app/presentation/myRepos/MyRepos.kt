@@ -71,6 +71,7 @@ class MyRepos : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
+                    val userIn = myReposVM.userIn.observeAsState().value
                     Box(modifier = Modifier.fillMaxSize()) {
                         MyBottomNavBar(
                             items = listOf(
@@ -80,7 +81,9 @@ class MyRepos : ComponentActivity() {
                                 BottomNavItem.Profile
                             )
                         )
-                        LoginUsingGithub()
+                        if (userIn == false){
+                            LoginUsingGithub()
+                        }
                     }
 
                 }
@@ -93,6 +96,10 @@ class MyRepos : ComponentActivity() {
 
     }
 
+    override fun onResume() {
+        super.onResume()
+        myReposVM.isUserLogin(this)
+    }
     @Composable
     fun LoginUsingGithub() {
         val userLogin = myReposVM.userLogin.observeAsState().value
