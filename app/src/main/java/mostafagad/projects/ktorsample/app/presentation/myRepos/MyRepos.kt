@@ -1,46 +1,35 @@
 package mostafagad.projects.ktorsample.app.presentation.myRepos
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
-import android.util.Log
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.BottomNavigation
+import androidx.compose.material.BottomNavigationItem
+import androidx.compose.material.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.Color.Companion.LightGray
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import coil.compose.rememberAsyncImagePainter
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import mostafagad.projects.ktorsample.app.presentation.theme.BaseText
+import mostafagad.projects.ktorsample.app.presentation.theme.BottomNavItem
 import mostafagad.projects.ktorsample.ui.theme.KtorSampleTheme
 
 
@@ -58,99 +47,85 @@ class MyRepos : ComponentActivity() {
                 Surface(
                     modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
                 ) {
-                    GithubProfile()
+                    MyBottomNavBar(
+                        items = listOf(
+                            BottomNavItem.Home,
+                            BottomNavItem.MyStarred,
+                            BottomNavItem.Forks ,
+                            BottomNavItem.Profile
+                        )
+                    )
                 }
             }
         }
 
         myReposVM.errorMessage.observe(this) {
-            Log.i("ERROR_RESPONSE", it.toString())
+            Toast.makeText(this@MyRepos, it, Toast.LENGTH_LONG).show()
         }
 
     }
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun GithubProfile() {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(15.dp),
-        ) {
-
-            ProfileSection()
-            ReposSection()
-        }
-    }
-
-    @Composable
-    fun ProfileSection() {
-        val owner = myReposVM.listOfRepos.observeAsState().value?.first()?.owner?.toEntity()
-        owner?.let {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .border(width = .5.dp, color = LightGray, shape = RoundedCornerShape(5.dp))
-                    .padding(10.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                ) {
-                    Image(
-                        painter = rememberAsyncImagePainter(owner.avatar),
-                        contentDescription = "avatar",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .size(64.dp)
-                            .clip(CircleShape)
-                            .border(1.dp, LightGray, CircleShape)
-                    )
-
-                }
-                Box(modifier = Modifier.weight(2f), contentAlignment = Alignment.CenterStart) {
-                    BaseText(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .wrapContentWidth(align = Alignment.CenterHorizontally)
-                            .wrapContentHeight(align = Alignment.CenterVertically),
-                        fontWeight = FontWeight.Medium,
-                        text = owner.name,
-                        maxLines = 1,
-                        color = Color.Black,
-                        fontSize = 15.sp,
-                    )
-                }
-            }
-        }
-
-    }
-
-    @Composable
-    fun ReposSection() {
-        val repos = myReposVM.listOfRepos.observeAsState().value
-        repos?.let {
-            Column {
-                Spacer(modifier = Modifier.height(15.dp))
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(5.dp)
-                ) {
-                    for (repo in repos!!) {
-                        item {
-                            RepoItem(repo = repo, onRepoClick = { url ->
-                                val i = Intent(Intent.ACTION_VIEW)
-                                i.data = Uri.parse(url)
-                                startActivity(i)
-
-                            })
-                        }
+    fun MyBottomNavBar(items: List<BottomNavItem>) {
+        val navController = rememberNavController()
+        Scaffold(
+            bottomBar = {
+                BottomNavigation(backgroundColor = Color.White, elevation = 5.dp) {
+                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentDestination = navBackStackEntry?.destination?.route
+                    items.forEach { screen ->
+                        val isSelected =
+                            currentDestination == screen.route/*Replace with your logic*/
+                        BottomNavigationItem(
+                            icon = {
+                                Icon(
+                                    painterResource(id = screen.icon),
+                                    contentDescription = screen.title
+                                )
+                            },
+                            label = {
+                                BaseText(
+                                    text = screen.title,
+                                    color = if (isSelected) Black else LightGray
+                                )
+                            },
+                            selectedContentColor = Black,
+                            unselectedContentColor = LightGray,
+                            alwaysShowLabel = true,
+                            selected = currentDestination == screen.route,
+                            onClick = {
+                                navController.navigate(screen.route) {
+                                    // Pop up to the start destination of the graph to
+                                    // avoid building up a large stack of destinations
+                                    // on the back stack as users select items
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    // Avoid multiple copies of the same destination when
+                                    // re selecting the same item
+                                    launchSingleTop = true
+                                    // Restore state when re selecting a previously selected item
+                                    restoreState = true
+                                }
+                            }
+                        )
                     }
                 }
             }
+        ) { innerPadding ->
+            NavHost(
+                navController,
+                startDestination = BottomNavItem.Home.route,
+                Modifier.padding(innerPadding)
+            ) {
+                composable(BottomNavItem.Home.route) { GithubProfile(myReposVM = myReposVM) }
+                composable(BottomNavItem.MyStarred.route) { StarredReposSection(myReposVM = myReposVM) }
+                composable(BottomNavItem.Forks.route) { ForkedReposSection(myReposVM = myReposVM) }
+                composable(BottomNavItem.Profile.route) { FullProfileSection(myReposVM = myReposVM) }
+            }
         }
+
     }
-
-
 }
 

@@ -11,4 +11,5 @@ data class RepoDTO(
     val forks_count:Int? = 0,
     val clone_url:String? = null ,
     val watchers: Int? = null,
+    val fork:Boolean? = null
 )
