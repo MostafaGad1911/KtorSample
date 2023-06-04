@@ -1,9 +1,14 @@
 package mostafagad.projects.ktorsample.app.presentation.myRepos
 
+import android.app.Activity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.OAuthProvider
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.ktor.client.features.ResponseException
 import kotlinx.coroutines.Dispatchers
@@ -41,20 +46,13 @@ class MyReposVM @Inject constructor(
     val errorMessage: LiveData<String?>
         get() = _errorMessage
 
+    private var provider = OAuthProvider.newBuilder("github.com")
+    private val firebaseAuth: FirebaseAuth by lazy { Firebase.auth }
 
-    init {
-        viewModelScope.launch {
-            withContext(Dispatchers.Default) {
-                getRepos(userName = "MostafaGad1911")
-            }
-            withContext(Dispatchers.Default) {
-                getStarredRepos(userName = "MostafaGad1911")
-            }
-            withContext(Dispatchers.Default) {
-                getProfile(userName = "MostafaGad1911")
-            }
-        }
-    }
+    private val _userLogin = MutableLiveData(false)
+    val userLogin: LiveData<Boolean>
+        get() = _userLogin
+
 
     private suspend fun getRepos(userName: String) {
         try {
@@ -81,5 +79,32 @@ class MyReposVM @Inject constructor(
         } catch (e: ResponseException) {
             _errorMessage.postValue(e.response.status.description)
         }
+    }
+
+    private fun loadUserData(userName: String){
+        viewModelScope.launch {
+            withContext(Dispatchers.Default) {
+                getRepos(userName =userName)
+            }
+            withContext(Dispatchers.Default) {
+                getStarredRepos(userName =userName)
+            }
+            withContext(Dispatchers.Default) {
+                getProfile(userName = userName)
+            }
+        }
+
+    }
+
+    fun loginWithGithub(activity: Activity){
+        firebaseAuth.startActivityForSignInWithProvider( /* activity = */activity, provider.build())
+            .addOnSuccessListener {
+                val profileName = it.additionalUserInfo?.username
+                profileName?.let { it1 -> loadUserData(it1) }
+                _userLogin.postValue(true)
+            }.addOnFailureListener {
+                _errorMessage.postValue( it.message.toString())
+
+            }
     }
 }
