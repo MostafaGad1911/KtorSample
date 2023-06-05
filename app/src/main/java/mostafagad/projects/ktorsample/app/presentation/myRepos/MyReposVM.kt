@@ -29,16 +29,16 @@ class MyReposVM @Inject constructor(
     private val getProfileUseCase: GetProfileUseCase,
 ) :
     ViewModel() {
-    private val _listOfRepos = MutableLiveData<List<RepoDTO>>()
-    val listOfRepos: LiveData<List<RepoDTO>>
+    private val _listOfRepos = MutableLiveData<List<RepoDTO>?>()
+    val listOfRepos: LiveData<List<RepoDTO>?>
         get() = _listOfRepos
 
-    private val _listOfStarredRepos = MutableLiveData<List<StarredRepoDTO>>()
-    val listOfStarredRepos: LiveData<List<StarredRepoDTO>>
+    private val _listOfStarredRepos = MutableLiveData<List<StarredRepoDTO>?>()
+    val listOfStarredRepos: LiveData<List<StarredRepoDTO>?>
         get() = _listOfStarredRepos
 
-    private val _myProfile = MutableLiveData<ProfileDTO>()
-    val myProfile: LiveData<ProfileDTO>
+    private val _myProfile = MutableLiveData<ProfileDTO?>()
+    val myProfile: LiveData<ProfileDTO?>
         get() = _myProfile
 
 
@@ -58,6 +58,11 @@ class MyReposVM @Inject constructor(
     private val _userIn = MutableLiveData(false)
     val userIn: LiveData<Boolean>
         get() = _userIn
+
+    val repoURL: LiveData<String?>
+        get() = _repoURL
+
+    private val _repoURL = MutableLiveData("")
 
 
     fun isUserLogin(activity:Activity){
@@ -126,5 +131,18 @@ class MyReposVM @Inject constructor(
                 _errorMessage.postValue( it.message.toString())
 
             }
+    }
+
+    fun updateWebUrl(url:String){
+        _repoURL.postValue(url)
+    }
+
+    override fun onCleared() {
+        firebaseAuth.signOut()
+        _listOfRepos.postValue(null)
+        _listOfStarredRepos.postValue(null)
+        _myProfile.postValue(null)
+        _errorMessage.postValue(null)
+        super.onCleared()
     }
 }

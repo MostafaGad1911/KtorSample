@@ -1,6 +1,9 @@
 package mostafagad.projects.ktorsample.app.presentation.myRepos
 
 import android.os.Bundle
+import android.view.ViewGroup
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -31,8 +34,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -43,8 +44,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -52,7 +55,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dagger.hilt.android.AndroidEntryPoint
 import mostafagad.projects.ktorsample.R
-import mostafagad.projects.ktorsample.app.presentation.theme.BaseText
 import mostafagad.projects.ktorsample.app.presentation.theme.BottomNavItem
 import mostafagad.projects.ktorsample.ui.theme.KtorSampleTheme
 
@@ -81,9 +83,10 @@ class MyRepos : ComponentActivity() {
                                 BottomNavItem.Profile
                             )
                         )
-                        if (userIn == false){
+                        if (userIn == false) {
                             LoginUsingGithub()
                         }
+                        RepoWebView()
                     }
 
                 }
@@ -96,14 +99,47 @@ class MyRepos : ComponentActivity() {
 
     }
 
+
+    @Composable
+    private fun RepoWebView() {
+        val mUrl: String = myReposVM.repoURL.observeAsState().value.toString()
+        // Adding a WebView inside AndroidView
+        // with layout as full screen
+        if (mUrl.isNotEmpty()) {
+            AndroidView(factory = {
+                WebView(it).apply {
+                    layoutParams = ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    webViewClient = WebViewClient()
+                    webChromeClient?.onCloseWindow(this)
+                    loadUrl(mUrl)
+                }
+            }, update = {
+                it.loadUrl(mUrl)
+            })
+
+        }
+
+    }
+
+    override fun onBackPressed() {
+        val mUrl: String = myReposVM.repoURL.value.toString()
+        if (mUrl.isNotEmpty()) {
+            myReposVM.updateWebUrl("")
+        } else finish()
+
+    }
+
     override fun onResume() {
         super.onResume()
         myReposVM.isUserLogin(this)
     }
+
     @Composable
     fun LoginUsingGithub() {
         val userLogin = myReposVM.userLogin.observeAsState().value
-        if (userLogin == false){
+        if (userLogin == false) {
             Column(
                 modifier = Modifier
                     .background(Color.White)
@@ -166,57 +202,55 @@ class MyRepos : ComponentActivity() {
     @Composable
     fun MyBottomNavBar(items: List<BottomNavItem>) {
         val navController = rememberNavController()
-        Scaffold(
-            bottomBar = {
-                BottomNavigation(backgroundColor = Color.White, elevation = 5.dp) {
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
-                    val currentDestination = navBackStackEntry?.destination?.route
-                    items.forEach { screen ->
-                        val isSelected =
-                            currentDestination == screen.route/*Replace with your logic*/
-                        BottomNavigationItem(
-                            icon = {
-                                Icon(
-                                    painterResource(id = screen.icon),
-                                    contentDescription = screen.title
-                                )
-                            },
-                            label = {
-                                BaseText(
-                                    text = screen.title,
-                                    color = if (isSelected) Black else LightGray
-                                )
-                            },
-                            selectedContentColor = Black,
-                            unselectedContentColor = LightGray,
-                            alwaysShowLabel = true,
-                            selected = currentDestination == screen.route,
-                            onClick = {
-                                navController.navigate(screen.route) {
-                                    // Pop up to the start destination of the graph to
-                                    // avoid building up a large stack of destinations
-                                    // on the back stack as users select items
-                                    popUpTo(navController.graph.findStartDestination().id) {
-                                        saveState = true
-                                    }
-                                    // Avoid multiple copies of the same destination when
-                                    // re selecting the same item
-                                    launchSingleTop = true
-                                    // Restore state when re selecting a previously selected item
-                                    restoreState = true
-                                }
-                            }
+        Scaffold(bottomBar = {
+            BottomNavigation(backgroundColor = Color.White, elevation = 5.dp) {
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentDestination = navBackStackEntry?.destination?.route
+                items.forEach { screen ->
+                    val isSelected = currentDestination == screen.route/*Replace with your logic*/
+                    BottomNavigationItem(icon = {
+                        Icon(
+                            painterResource(id = screen.icon),
+                            contentDescription = screen.title
                         )
-                    }
+                    },
+                        label = {
+                            Text(
+                                text = screen.title,
+                                color = if (isSelected) Black else LightGray,
+                                fontSize = 15.sp,
+                                textAlign = TextAlign.Center ,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        },
+                        selectedContentColor = Black,
+                        unselectedContentColor = LightGray,
+                        alwaysShowLabel = true,
+                        selected = currentDestination == screen.route,
+                        onClick = {
+                            navController.navigate(screen.route) {
+                                // Pop up to the start destination of the graph to
+                                // avoid building up a large stack of destinations
+                                // on the back stack as users select items
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                }
+                                // Avoid multiple copies of the same destination when
+                                // re selecting the same item
+                                launchSingleTop = true
+                                // Restore state when re selecting a previously selected item
+                                restoreState = true
+                            }
+                        })
                 }
             }
-        ) { innerPadding ->
+        }) { innerPadding ->
             NavHost(
                 navController,
                 startDestination = BottomNavItem.Home.route,
                 Modifier.padding(innerPadding)
             ) {
-                composable(BottomNavItem.Home.route) { GithubProfile(myReposVM = myReposVM) }
+                composable(BottomNavItem.Home.route) { AllReposSection(myReposVM = myReposVM) }
                 composable(BottomNavItem.MyStarred.route) { StarredReposSection(myReposVM = myReposVM) }
                 composable(BottomNavItem.Forks.route) { ForkedReposSection(myReposVM = myReposVM) }
                 composable(BottomNavItem.Profile.route) { FullProfileSection(myReposVM = myReposVM) }

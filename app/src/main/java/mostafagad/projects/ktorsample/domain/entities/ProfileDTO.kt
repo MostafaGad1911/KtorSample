@@ -37,6 +37,6 @@ data class ProfileDTO(
     val updated_at: String? = null,
     val url: String? = null
 ){
-    fun toEntity(): Profile = Profile(name = name , img = avatar_url, bio = bio , followers = followers , following = following , emails = email , public_repos = public_repos)
+    fun toEntity(): Profile = Profile(name = name , img = avatar_url, bio = bio , followers = followers , following = following , emails = email , public_repos = public_repos , location = location , work = company)
 
 }

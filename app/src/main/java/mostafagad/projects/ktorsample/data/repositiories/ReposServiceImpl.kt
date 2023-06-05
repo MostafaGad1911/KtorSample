@@ -18,6 +18,7 @@ class ReposServiceImpl @Inject constructor(private val client: HttpClient) :
         return client.get(
             "${RemoteRoutes.BASE_URL}users/$userName/repos?type=private&sort=updated"
         ){
+            header("Authorization", "Bearer $ACCESS_TOKEN")
         }
     }
 
@@ -25,6 +26,7 @@ class ReposServiceImpl @Inject constructor(private val client: HttpClient) :
         return client.get(
             "${RemoteRoutes.BASE_URL}users/$userName/starred"
         ){
+            header("Authorization", "Bearer $ACCESS_TOKEN")
         }
     }
 
@@ -32,7 +34,7 @@ class ReposServiceImpl @Inject constructor(private val client: HttpClient) :
         return client.get(
             "${RemoteRoutes.BASE_URL}users/$userName"
         ){
-            header("Authorization", "token $ACCESS_TOKEN")
+            header("Authorization", "Bearer $ACCESS_TOKEN")
         }
     }
 }

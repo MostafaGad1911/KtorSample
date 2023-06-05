@@ -8,4 +8,6 @@ data class Profile(
     val following: Int? = null,
     val followers: Int? = null,
     val public_repos: Int? = null,
+    val location:String? = null ,
+    val work:String? = null
 )

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,8 +26,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import mostafagad.projects.ktorsample.R
-import mostafagad.projects.ktorsample.app.presentation.theme.BaseText
-import mostafagad.projects.ktorsample.domain.entities.RepoDTO
 import mostafagad.projects.ktorsample.domain.entities.StarredRepoDTO
 
 @Composable
@@ -65,7 +64,7 @@ fun StarredRepoItem(
                         .fillMaxHeight(),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    BaseText(
+                    Text(
                         text = repo.name.toString(),
                         modifier = Modifier
                             .wrapContentHeight(align = Alignment.CenterVertically)
@@ -79,7 +78,7 @@ fun StarredRepoItem(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    BaseText(
+                    Text(
                         text = repo.forks_count.toString(),
                     )
 
@@ -99,7 +98,7 @@ fun StarredRepoItem(
                     horizontalArrangement = Arrangement.End,
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    BaseText(
+                    Text(
                         text = repo.watchers.toString(),
                     )
                     Spacer(modifier = Modifier.width(5.dp))
