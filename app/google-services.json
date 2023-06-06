@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "405543115162",
+    "project_id": "ktorsample-c7d59",
+    "storage_bucket": "ktorsample-c7d59.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:405543115162:android:369a155aae1e8eb5c5c223",
+        "android_client_info": {
+          "package_name": "mostafagad.projects.ktorsample"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "405543115162-8n1qfn1ah906ads0leg4n4jtl4p44p8s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDD4L7_PG0QnW_OV5XhEw9f-NDPFmKVBWw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "405543115162-8n1qfn1ah906ads0leg4n4jtl4p44p8s.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
